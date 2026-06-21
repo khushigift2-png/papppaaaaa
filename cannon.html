@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360° Flower Gate - Bubble Shooter</title>
+    <style>
+        :root {
+            --primary: #a855f7;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-main);
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0 0 5px 0;
+            background: linear-gradient(to right, #f472b6, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0 0 20px 0;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .game-wrap {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            padding: 15px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        canvas {
+            background: #111827;
+            border-radius: 16px;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.7);
+            cursor: crosshair;
+            display: block;
+            touch-action: none;
+        }
+
+        .ui-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 0 5px;
+        }
+
+        .btn-restart {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--card-border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-restart:hover {
+            background: var(--primary);
+            border-color: transparent;
+        }
+    </style>
+</head>
+<body>
+ <body>
+
+    <a href="games.html" style="
+        position: absolute;
+        top: 25px;
+        left: 8%;
+        z-index: 100;
+        text-decoration: none;
+        padding: 10px 20px;
+        background-color: #ffffff;
+        color: #191970;
+        border: 2px solid #1d66ad;
+        border-radius: 30px;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        display: inline-block;
+    ">
+        ⬅ Go Back
+    </a>
+    <div class="top-shape"></div>
+
+    <h1>360° Bubble Cannon</h1>
+    <p class="subtitle">Aim anywhere! Shoot your ball in any direction to explode clusters.</p>
+
+    <div class="game-wrap">
+        <div class="ui-row">
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted)">
+                Target: Clear all 5 layers
+            </div>
+            <button class="btn-restart" onclick="resetGame()">🔄 Restart</button>
+        </div>
+        
+        <canvas id="gameCanvas" width="440" height="580"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const COLORS = {
+            red: '#ef4444',
+            blue: '#3b82f6',
+            green: '#10b981',
+            yellow: '#eab308',
+            pink: '#ec4899'
+        };
+        const COLOR_KEYS = Object.keys(COLORS);
+
+        const ROWS = 5;
+        const COLS = 11;
+        const BUBBLE_RADIUS = 20;
+
+        let grid = [];
+        let cannon = {};
+        let projectiles = [];
+        let particles = [];
+        let gate = {};
+        let rewardFlower = null;
+        let gameOver = false;
+
+        let currentAmmoColor = '';
+        let nextAmmoColor = '';
+
+        function initGame() {
+            projectiles = [];
+            particles = [];
+            gameOver = false;
+
+            gate = {
+                y: 0,
+                height: 90,
+                openProgress: 0,
+                isOpen: false
+            };
+
+            rewardFlower = {
+                x: canvas.width / 2,
+                y: 45,
+                scale: 0,
+                petalRotation: 0
+            };
+
+            grid = [];
+            let startY = gate.height + BUBBLE_RADIUS + 10;
+            
+            for (let r = 0; r < ROWS; r++) {
+                grid[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    let randomKey = COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
+                    let cx = BUBBLE_RADIUS + 10 + c * (BUBBLE_RADIUS * 2);
+                    let cy = startY + r * (BUBBLE_RADIUS * 2 - 2); 
+
+                    grid[r][c] = {
+                        x: cx,
+                        y: cy,
+                        colorKey: randomKey,
+                        color: COLORS[randomKey],
+                        active: true,
+                        row: r,
+                        col: c
+                    };
+                }
+            }
+
+            // Placed cannon precisely in the absolute center area of the bottom stage
+            cannon = {
+                x: canvas.width / 2,
+                y: canvas.height / 2 + 100, // Shift down slightly from true center for better play space
+                angle: -Math.PI / 2,
+                radius: 22,
+                length: 50
+            };
+
+            currentAmmoColor = COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
+            nextAmmoColor = COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
+        }
+
+        function cycleAmmo() {
+            currentAmmoColor = nextAmmoColor;
+            
+            let remainingColors = [];
+            grid.forEach(row => row.forEach(b => {
+                if (b.active && !remainingColors.includes(b.colorKey)) remainingColors.push(b.colorKey);
+            }));
+
+            if(remainingColors.length > 0) {
+                nextAmmoColor = remainingColors[Math.floor(Math.random() * remainingColors.length)];
+            } else {
+                nextAmmoColor = COLOR_KEYS[Math.floor(Math.random() * COLOR_KEYS.length)];
+            }
+        }
+
+        function fireCannon() {
+            if (gameOver || gate.isOpen || projectiles.length > 0) return;
+
+            let targetX = cannon.x + Math.cos(cannon.angle) * cannon.length;
+            let targetY = cannon.y + Math.sin(cannon.angle) * cannon.length;
+
+            projectiles.push({
+                x: targetX,
+                y: targetY,
+                vx: Math.cos(cannon.angle) * 12,
+                vy: Math.sin(cannon.angle) * 12,
+                radius: BUBBLE_RADIUS,
+                colorKey: currentAmmoColor,
+                color: COLORS[currentAmmoColor]
+            });
+
+            cycleAmmo();
+        }
+
+        function getNeighbors(bubble) {
+            let neighbors = [];
+            let r = bubble.row, c = bubble.col;
+
+            if (r > 0 && grid[r-1][c]) neighbors.push(grid[r-1][c]);
+            if (r < ROWS - 1 && grid[r+1][c]) neighbors.push(grid[r+1][c]);
+            if (c > 0 && grid[r][c-1]) neighbors.push(grid[r][c-1]);
+            if (c < COLS - 1 && grid[r][c+1]) neighbors.push(grid[r][c+1]);
+
+            return neighbors.filter(n => n.active);
+        }
+
+        function popCluster(startBubble) {
+            let targetColor = startBubble.colorKey;
+            let queue = [startBubble];
+            let matchingCluster = [];
+            startBubble.visited = true;
+
+            while (queue.length > 0) {
+                let current = queue.shift();
+                matchingCluster.push(current);
+
+                let neighbors = getNeighbors(current);
+                neighbors.forEach(n => {
+                    if (!n.visited && n.colorKey === targetColor) {
+                        n.visited = true;
+                        queue.push(n);
+                    }
+                });
+            }
+
+            grid.forEach(row => row.forEach(b => b.visited = false));
+
+            matchingCluster.forEach(b => {
+                b.active = false;
+                createExplosion(b.x, b.y, b.color);
+            });
+        }
+
+        function createExplosion(x, y, color) {
+            for(let i=0; i<20; i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 4 + 2;
+                particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    color: color,
+                    alpha: 1,
+                    size: Math.random() * 3 + 2,
+                    decay: Math.random() * 0.02 + 0.02,
+                    type: 'spark'
+                });
+            }
+        }
+
+        function createFlowerFirework() {
+            let colors = ['#f472b6', '#ec4899', '#f43f5e', '#a855f7', '#6366f1', '#38bdf8', '#f59e0b'];
+            let randomColor = colors[Math.floor(Math.random() * colors.length)];
+            let burstX = Math.random() * canvas.width;
+            let burstY = Math.random() * (canvas.height * 0.5) + 100;
+
+            let petalCount = 8;
+            for(let p = 0; p < petalCount; p++) {
+                let baseAngle = (p / petalCount) * Math.PI * 2;
+                for (let i = 0; i < 7; i++) {
+                    let speed = 1.2 + (i * 0.4);
+                    let offsetAngle = baseAngle + (Math.random() * 0.12 - 0.06);
+                    particles.push({
+                        x: burstX, y: burstY,
+                        vx: Math.cos(offsetAngle) * speed,
+                        vy: Math.sin(offsetAngle) * speed,
+                        color: randomColor,
+                        alpha: 1,
+                        size: Math.random() * 2.5 + 2,
+                        decay: 0.012,
+                        type: 'petal'
+                    });
+                }
+            }
+        }
+
+        function update() {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                let p = projectiles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Bounce off left/right side limits
+                if(p.x - p.radius < 0 || p.x + p.radius > canvas.width) p.vx *= -1;
+                
+                // Bounce off bottom limit (since it travels in all directions now)
+                if(p.y + p.radius > canvas.height) p.vy *= -1;
+
+                let hitDetected = false;
+                
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        let b = grid[r][c];
+                        if (!b.active) continue;
+
+                        let dx = p.x - b.x;
+                        let dy = p.y - b.y;
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+
+                        if (dist < (p.radius + BUBBLE_RADIUS - 4)) {
+                            hitDetected = true;
+                            if (p.colorKey === b.colorKey) {
+                                popCluster(b);
+                            } else {
+                                createExplosion(p.x, p.y, '#ffffff');
+                            }
+                            break;
+                        }
+                    }
+                    if (hitDetected) break;
+                }
+
+                if (!hitDetected && p.y - p.radius <= gate.height) {
+                    createExplosion(p.x, p.y, '#ffffff');
+                    hitDetected = true;
+                }
+
+                if (hitDetected) {
+                    projectiles.splice(i, 1);
+                }
+            }
+
+            for(let i = particles.length - 1; i >= 0; i--) {
+                let pt = particles[i];
+                pt.x += pt.vx;
+                pt.y += pt.vy;
+                if(pt.type === 'petal') {
+                    pt.vx *= 0.98;
+                    pt.vy += 0.02; 
+                }
+                pt.alpha -= pt.decay;
+                if(pt.alpha <= 0) particles.splice(i, 1);
+            }
+
+            let activeBubbleCount = 0;
+            grid.forEach(row => row.forEach(b => { if(b.active) activeBubbleCount++; }));
+
+            if (activeBubbleCount === 0 && !gate.isOpen) {
+                if (gate.openProgress < 1) {
+                    gate.openProgress += 0.01;
+                } else {
+                    gate.isOpen = true;
+                    gameOver = true;
+                }
+            }
+
+            if (gate.openProgress > 0.4 && rewardFlower.scale < 1) {
+                rewardFlower.scale += 0.015;
+                rewardFlower.petalRotation += 0.02;
+            }
+
+            if (gameOver && Math.random() < 0.03) {
+                createFlowerFirework();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Castle Wall Backdrop
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, canvas.width, gate.height);
+
+            // Flower Blooming
+            if (gate.openProgress > 0) {
+                ctx.save();
+                ctx.translate(rewardFlower.x, rewardFlower.y);
+                ctx.scale(rewardFlower.scale, rewardFlower.scale);
+                ctx.rotate(rewardFlower.petalRotation);
+                
+                let numPetals = 6;
+                ctx.fillStyle = '#fb7185'; 
+                for (let i = 0; i < numPetals; i++) {
+                    ctx.rotate((Math.PI * 2) / numPetals);
+                    ctx.beginPath();
+                    ctx.ellipse(0, -15, 8, 14, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#fef08a';
+                ctx.beginPath();
+                ctx.arc(0, 0, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Sliding Gates
+            ctx.fillStyle = '#475569';
+            let gateShiftX = (canvas.width / 2) * gate.openProgress;
+            ctx.fillRect(0 - gateShiftX, 0, canvas.width / 2, gate.height);
+            ctx.fillRect(canvas.width / 2 + gateShiftX, 0, canvas.width / 2, gate.height);
+
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2 - gateShiftX, 0);
+            ctx.lineTo(canvas.width / 2 - gateShiftX, gate.height);
+            ctx.moveTo(canvas.width / 2 + gateShiftX, 0);
+            ctx.lineTo(canvas.width / 2 + gateShiftX, gate.height);
+            ctx.stroke();
+
+            // Grid Bubbles
+            grid.forEach(row => row.forEach(b => {
+                if (!b.active) return;
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = b.color;
+                ctx.fillStyle = b.color;
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, BUBBLE_RADIUS - 1, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(255,255,255,0.35)';
+                ctx.beginPath();
+                ctx.arc(b.x - 5, b.y - 5, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }));
+
+            // Projectiles
+            projectiles.forEach(p => {
+                ctx.save();
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = p.color;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius - 1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Particles
+            particles.forEach(pt => {
+                ctx.save();
+                ctx.globalAlpha = pt.alpha;
+                ctx.fillStyle = pt.color;
+                if(pt.type === 'petal') {
+                    ctx.translate(pt.x, pt.y);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, pt.size, pt.size * 1.6, Math.PI/4, 0, Math.PI*2);
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+
+            // Cannon & Loading Loader Previews
+            if (!gameOver) {
+                // Next Up Ammo Indicator (Drawn floating behind the cannon hub)
+                ctx.save();
+                ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                // Dynamically tracks opposite vector of muzzle direction
+                let backX = cannon.x - Math.cos(cannon.angle) * 35;
+                let backY = cannon.y - Math.sin(cannon.angle) * 35;
+                ctx.arc(backX, backY, BUBBLE_RADIUS - 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = COLORS[nextAmmoColor];
+                ctx.beginPath();
+                ctx.arc(backX, backY, BUBBLE_RADIUS - 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Rotational Turret Assembly
+                ctx.save();
+                ctx.translate(cannon.x, cannon.y);
+                ctx.rotate(cannon.angle);
+
+                ctx.fillStyle = '#64748b';
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.rect(0, -14, cannon.length, 28);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#334155';
+                ctx.beginPath();
+                ctx.arc(0, 0, cannon.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Loaded Active Chamber Bullet
+                ctx.fillStyle = COLORS[currentAmmoColor];
+                ctx.beginPath();
+                ctx.arc(0, 0, BUBBLE_RADIUS - 1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            if(gameOver) {
+                ctx.save();
+                ctx.font = 'bold 24px system-ui';
+                ctx.fillStyle = '#f472b6';
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#ec4899';
+                ctx.fillText("✿ The Gate Has Opened! ✿", canvas.width / 2, canvas.height - 40);
+                ctx.restore();
+            }
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        function handleAim(clientX, clientY) {
+            let rect = canvas.getBoundingClientRect();
+            let mouseX = clientX - rect.left;
+            let mouseY = clientY - rect.top;
+
+            // Full 360-degree vector parsing
+            let dx = mouseX - cannon.x;
+            let dy = mouseY - cannon.y;
+            cannon.angle = Math.atan2(dy, dx);
+        }
+
+        canvas.addEventListener('mousemove', (e) => handleAim(e.clientX, e.clientY));
+        canvas.addEventListener('click', () => fireCannon());
+
+        canvas.addEventListener('touchmove', (e) => {
+            if(e.touches.length > 0) handleAim(e.touches[0].clientX, e.touches[0].clientY);
+        });
+        canvas.addEventListener('touchend', () => fireCannon());
+
+        function resetGame() {
+            initGame();
+        }
+
+        initGame();
+        loop();
+    </script>
+</body>
+</html>

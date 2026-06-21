@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerIQ Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+:root {
+    --bg-gradient: linear-gradient(to top, #01050e, #030b1e 30%, #06152b 70%, #0a1c36);
+}
+
+body{
+    background:#050505;
+    color:white;
+}
+
+.container{
+    display:flex;
+    min-height:100vh;
+}
+
+/* Sidebar */
+.sidebar{
+    width:280px;
+    background:#000;
+    border-right:1px solid #222;
+    display:flex;
+    flex-direction:column;
+    flex-shrink: 0;
+}
+
+.logo{
+    padding:25px;
+    border-bottom:1px solid #222;
+}
+
+.logo h2{
+    font-size:28px;
+}
+
+.logo p{
+    color:#888;
+    margin-top:4px;
+}
+
+.menu{
+    padding:25px 15px;
+}
+
+.menu-title{
+    color:#777;
+    font-size:13px;
+    margin-bottom:15px;
+    letter-spacing:1px;
+}
+
+.menu a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    text-decoration:none;
+    color:#aaa;
+    padding:16px;
+    margin-bottom:10px;
+    border-radius:15px;
+    transition:.3s;
+}
+
+.menu a:hover,
+.menu a.active{
+    background:rgba(124,58,237,.15);
+    border:1px solid #7c3aed;
+    color:white;
+}
+
+.profile{
+    margin-top:auto;
+    padding:20px;
+    border-top:1px solid #222;
+}
+
+.profile-card{
+    background:#111;
+    border-radius:18px;
+    padding:15px;
+}
+
+.profile h4{
+    margin-bottom:5px;
+}
+
+.profile p{
+    color:#888;
+    font-size:14px;
+}
+
+/* Main Content Wrapper */
+.main{
+    flex:1;
+    padding:40px;
+    background-image: var(--bg-gradient);
+    display: flex;
+    flex-direction: column;   
+    align-items: center;      
+    justify-content: center; 
+    overflow-y: auto;
+    position: relative;
+}
+
+.night-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 40%, transparent 10%, rgba(0, 0, 0, 0.75));
+    z-index: 15;
+    pointer-events: none;
+}
+
+/* =======================================
+   LARGE CLICKABLE LINK BOXES
+======================================= */
+.tabs-container {
+    position: relative;
+    z-index: 25; 
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    max-width: 1100px; 
+    margin: 20px 0;
+}
+
+/* Transformed into anchor link cards */
+.tab-link-box {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none; /* Removes automatic underline style */
+    
+    min-height: 280px; 
+    padding: 40px;
+    border: 3px solid #66b3ff; 
+    border-radius: 24px;
+    cursor: pointer;
+    background: white;
+    color: #191970; 
+    transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1), 
+                background 0.3s ease, 
+                border-color 0.3s ease, 
+                box-shadow 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.btn-icon {
+    font-size: 56px;
+    margin-bottom: 15px;
+}
+
+.btn-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.btn-desc {
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.8;
+    max-width: 320px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* Interaction Hover States */
+.tab-link-box:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: #1d66ad; 
+    border-color: #ffffff;
+    color: white; 
+    box-shadow: 0 20px 40px rgba(102, 179, 255, 0.3);
+}
+
+/* Press state visual fallback */
+.tab-link-box:active {
+    transform: scale(0.98);
+}
+
+.glass-ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(1,6,16,0.2), #010610);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    z-index: 20;
+    pointer-events: none;
+}
+
+@media(max-width:900px){
+    .tabs-container {
+        flex-direction: column;
+    }
+    .tab-link-box {
+        min-height: 200px;
+        padding: 25px;
+    }
+}
+
+@media(max-width:768px){
+    .sidebar{
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <h2>Father's Day</h2>
+            <p>Gift Platform</p>
+        </div>
+
+        <div class="menu">
+            <div class="menu-title">Gifts</div>
+            <a href="main page.html">📊 Main Page</a>
+            <a href="together.html" >📹 Together</a>
+            <a href="gallery.html">📸 Gallery</a>
+            <a href="games.html"class="active">🎮 Games</a>
+        </div>
+
+        <div class="profile">
+            <div class="profile-card">
+                <h4>Naincy Prakash</h4>
+                <h4>Umang Prakash</h4>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="night-overlay"></div>
+
+        <div class="tabs-container">
+            <a href="puzzle.html" class="tab-link-box">
+                <span class="btn-icon">🧠</span>
+                <span class="btn-title">Puzzle Game</span>
+                <span class="btn-desc">Click here to head over to the custom Father's Day photo matching page.</span>
+            </a>
+
+            <a href="cannon.html" class="tab-link-box">
+                <span class="btn-icon">💌</span>
+                <span class="btn-title">Cannon Game</span>
+                <span class="btn-desc">Launch into action! Click to navigate to the interactive arcade module page.</span>
+            </a>
+        </div>
+
+        <div class="glass-ground"></div>
+    </main>
+
+</div>
+
+</body>
+</html>

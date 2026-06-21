@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerIQ Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+:root {
+    --bg-gradient: linear-gradient(to top, #01050e, #030b1e 30%, #06152b 70%, #0a1c36);
+    --pink-core: #ff4d8d;
+    --pink-glow: rgba(255, 77, 141, 0.55);
+    --purple-core: #9b51e0;
+    --purple-glow: rgba(155, 81, 224, 0.55);
+    --cyan-core: #00f2fe;
+    --cyan-glow: rgba(0, 242, 254, 0.5);
+    --orange-core: #ff7643;
+    --orange-glow: rgba(255, 118, 67, 0.55);
+    --yellow-core: #ffdf43;
+    --yellow-glow: rgba(255, 223, 67, 0.55);
+    --stem-color: #1a4a30;
+    --leaf-light: #62cf62;
+    --leaf-dark: #2d7a44;
+    --grass-glow: rgba(98, 207, 98, 0.4);
+}
+
+body{
+    background:#050505;
+    color:white;
+}
+
+.container{
+    display:flex;
+    min-height:100vh;
+}
+
+/* Sidebar */
+.sidebar{
+    width:280px;
+    background:#000;
+    border-right:1px solid #222;
+    display:flex;
+    flex-direction:column;
+    flex-shrink: 0;
+}
+
+.logo{
+    padding:25px;
+    border-bottom:1px solid #222;
+}
+
+.logo h2{
+    font-size:28px;
+}
+
+.logo p{
+    color:#888;
+    margin-top:4px;
+}
+
+.menu{
+    padding:25px 15px;
+}
+
+.menu-title{
+    color:#777;
+    font-size:13px;
+    margin-bottom:15px;
+    letter-spacing:1px;
+}
+
+.menu a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    text-decoration:none;
+    color:#aaa;
+    padding:16px;
+    margin-bottom:10px;
+    border-radius:15px;
+    transition:.3s;
+}
+
+.menu a:hover,
+.menu a.active{
+    background:rgba(124,58,237,.15);
+    border:1px solid #7c3aed;
+    color:white;
+}
+
+.profile{
+    margin-top:auto;
+    padding:20px;
+    border-top:1px solid #222;
+}
+
+.profile-card{
+    background:#111;
+    border-radius:18px;
+    padding:15px;
+}
+
+.profile h4{
+    margin-bottom:5px;
+}
+
+.profile p{
+    color:#888;
+    font-size:14px;
+}
+
+/* Main Content Wrapper */
+.main{
+    flex:1;
+    padding:40px;
+    background-image: var(--bg-gradient);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
+    perspective: 1400px;
+    position: relative;
+}
+
+.night-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 40%, transparent 10%, rgba(0, 0, 0, 0.75));
+    z-index: 15;
+    pointer-events: none;
+}
+
+/* Flower System Architecture */
+.flower-bed {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    margin-bottom: 50px;
+}
+
+.origin-root {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 1px;
+    z-index: 10;
+}
+
+.flower-cluster {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform-origin: bottom center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.flower--far-left {
+    transform: scale(0.52) rotate(-35deg);
+    animation: sway-far-left 6.5s ease-in-out infinite alternate;
+    z-index: 2;
+}
+.flower--far-left .petal { background-image: linear-gradient(to top, var(--orange-core), #ffb396); box-shadow: 0 0 30px var(--orange-glow); }
+
+.flower--left {
+    transform: scale(0.65) rotate(-18deg);
+    animation: sway-left 5.5s ease-in-out infinite alternate;
+    z-index: 4;
+}
+.flower--left .petal { background-image: linear-gradient(to top, var(--purple-core), #e0aaff); box-shadow: 0 0 30px var(--purple-glow); }
+
+.flower--center {
+    transform: scale(0.75);
+    animation: sway-center 6s ease-in-out infinite alternate;
+    z-index: 6;
+}
+.flower--center .petal { background-image: linear-gradient(to top, var(--pink-core), #ff9ebe); box-shadow: 0 0 35px var(--pink-glow); }
+
+.flower--right {
+    transform: scale(0.68) rotate(16deg);
+    animation: sway-right 5.8s ease-in-out infinite alternate;
+    z-index: 5;
+}
+.flower--right .petal { background-image: linear-gradient(to top, var(--cyan-core), #abe9f4); box-shadow: 0 0 30px var(--cyan-glow); }
+
+.flower--far-right {
+    transform: scale(0.55) rotate(32deg);
+    animation: sway-far-right 6.2s ease-in-out infinite alternate;
+    z-index: 3;
+}
+.flower--far-right .petal { background-image: linear-gradient(to top, var(--yellow-core), #fff2b2); box-shadow: 0 0 30px var(--yellow-glow); }
+
+.stem {
+    width: 8px;
+    height: 380px;
+    background-image: linear-gradient(to top, rgba(0,0,0,0.6), var(--stem-color));
+    border-radius: 6px;
+    position: relative;
+}
+.flower--far-left .stem { height: 290px; }
+.flower--left .stem     { height: 340px; }
+.flower--right .stem    { height: 350px; }
+.flower--far-right .stem { height: 300px; }
+
+.foliage {
+    position: absolute;
+    width: 16px;
+    height: 32px;
+    background-image: linear-gradient(to top, var(--leaf-dark), var(--leaf-light));
+    border-radius: 0 100px 0 100px;
+    transform-origin: left bottom;
+    box-shadow: inset -1px 1px 3px rgba(255,255,255,0.2), 0 0 8px rgba(98, 207, 98, 0.2);
+}
+.foliage--L { transform: rotate(-45deg) scaleX(-1); left: -1px; }
+.foliage--R { transform: rotate(45deg); right: -16px; }
+.foli-1 { top: 30%; }
+.foli-2 { top: 45%; }
+.foli-3 { top: 60%; }
+.foli-4 { top: 75%; }
+
+.bud-wrapper {
+    position: relative;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    animation: bloom-growth 4s cubic-bezier(0.15, 0.85, 0.35, 1.05) forwards;
+}
+
+.petal-container {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 140px;
+    transform-origin: bottom center;
+}
+
+.petal {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 52px;
+    height: 98px;
+    border-radius: 50% 50% 50% 50% / 75% 75% 35% 35%;
+    transform-origin: bottom center;
+    opacity: 0.95;
+}
+
+.petal--1 { transform: translateX(-50%) rotateY(0deg) rotateX(-12deg); z-index: 10; }
+.petal--2 { transform: translateX(-50%) rotateY(35deg) rotateZ(12deg) rotateX(-15deg); }
+.petal--3 { transform: translateX(-50%) rotateY(-35deg) rotateZ(-12deg) rotateX(-15deg); }
+.petal--4 { transform: translateX(-50%) rotateY(70deg) rotateZ(25deg) rotateX(-20deg); opacity: 0.88; }
+.petal--5 { transform: translateX(-50%) rotateY(-70deg) rotateZ(-25deg) rotateX(-20deg); opacity: 0.88; }
+
+.center-core {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border-radius: 50%;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 20px #fff, 0 0 40px rgba(255, 255, 255, 0.7);
+    z-index: 12;
+}
+
+/* Grass Layers */
+.grass-layer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 260px;
+    pointer-events: none;
+}
+.grass-layer--background { z-index: 1; filter: blur(2px); opacity: 0.5; }
+.grass-layer--midground  { z-index: 3; opacity: 0.75; }
+.grass-layer--foreground { z-index: 12; filter: drop-shadow(0 0 12px var(--grass-glow)); }
+
+.blade {
+    position: absolute;
+    bottom: 0;
+    width: 4px;
+    height: 150px;
+    background-image: linear-gradient(to top, rgba(0,0,0,0.7), var(--leaf-dark), var(--leaf-light));
+    border-radius: 100% 100% 0 0 / 90% 90% 0 0;
+    transform-origin: bottom center;
+}
+
+.blade::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    background-color: #a2ffa2;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #62cf62, 0 0 20px #62cf62;
+}
+
+.g-1 { left: 8%;  height: 210px; animation: grass-sway-L 4.2s ease-in-out infinite alternate; }
+.g-2 { left: 18%; height: 160px; animation: grass-sway-R 5.1s ease-in-out infinite alternate 0.3s; }
+.g-3 { left: 25%; height: 250px; animation: grass-sway-L 6.0s ease-in-out infinite alternate 0.8s; }
+.g-4 { left: 34%; height: 180px; animation: grass-sway-R 4.5s ease-in-out infinite alternate 0.1s; }
+.g-5 { left: 43%; height: 230px; animation: grass-sway-L 5.5s ease-in-out infinite alternate 0.6s; }
+.g-6 { left: 56%; height: 260px; animation: grass-sway-R 6.3s ease-in-out infinite alternate 0.2s; }
+.g-7 { left: 68%; height: 170px; animation: grass-sway-L 4.8s ease-in-out infinite alternate 0.4s; }
+.g-8 { left: 76%; height: 240px; animation: grass-sway-R 5.7s ease-in-out infinite alternate 0.9s; }
+.g-9 { left: 85%; height: 190px; animation: grass-sway-L 5.0s ease-in-out infinite alternate; }
+.g-10{ left: 93%; height: 220px; animation: grass-sway-R 4.6s ease-in-out infinite alternate 0.5s; }
+
+/* Fireflies */
+.firefly {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px 4px rgba(255, 255, 255, 0.9);
+    animation: float-ascend 6s linear infinite;
+}
+.f-1 { left: -30px; animation-delay: 0.5s; }
+.f-2 { right: -30px; animation-delay: 2s; }
+
+.glass-ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(1,6,16,0.2), #010610);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    z-index: 20;
+}
+
+/* Animations */
+@keyframes bloom-growth {
+    0% { transform: scale(0) translateY(30px); }
+    100% { transform: scale(1) translateY(0); }
+}
+
+@keyframes sway-far-left { 0% { transform: scale(0.52) rotate(-38deg); } 100% { transform: scale(0.52) rotate(-32deg); } }
+@keyframes sway-left     { 0% { transform: scale(0.65) rotate(-21deg); } 100% { transform: scale(0.65) rotate(-15deg); } }
+@keyframes sway-center   { 0% { transform: scale(0.75) rotate(-3deg); } 100% { transform: scale(0.75) rotate(3deg); } }
+@keyframes sway-right    { 0% { transform: scale(0.68) rotate(13deg); } 100% { transform: scale(0.68) rotate(19deg); } }
+@keyframes sway-far-right{ 0% { transform: scale(0.55) rotate(29deg); } 100% { transform: scale(0.55) rotate(35deg); } }
+
+@keyframes grass-sway-L { 0% { transform: rotate(-12deg) skewX(-5deg); } 100% { transform: rotate(2deg) skewX(2deg); } }
+@keyframes grass-sway-R { 0% { transform: rotate(-2deg) skewX(-2deg); } 100% { transform: rotate(14deg) skewX(5deg); } }
+
+@keyframes float-ascend {
+    0% { transform: translateY(0) scale(0.3); opacity: 0; }
+    20% { opacity: 1; transform: translateY(-30px) scale(1); }
+    100% { transform: translateY(-250px) scale(0); opacity: 0; }
+}
+
+@media(max-width:768px){
+    .sidebar{
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <h2>Father's Day</h2>
+            <p>Gift Platform</p>
+        </div>
+
+        <div class="menu">
+            <div class="menu-title">Gifts</div>
+            <a href="main page.html" class="active">📊 Main Page</a>
+            <a href="together.html">📹 Together</a>
+            <a href="gallery.html">📸 Gallery</a>
+            <a href="games.html">🎮 Games</a>
+            
+        </div>
+
+        <div class="profile">
+            <div class="profile-card">
+                <h4>Naincy Prakash</h4>
+                <h4>Umang Prakash</h4>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="night-overlay"></div>
+
+        <div class="flower-bed">
+            
+            <div class="grass-layer grass-layer--background">
+                <div class="blade g-1"></div>
+                <div class="blade g-4"></div>
+                <div class="blade g-7"></div>
+                <div class="blade g-10"></div>
+            </div>
+
+            <div class="grass-layer grass-layer--midground">
+                <div class="blade g-2"></div>
+                <div class="blade g-5"></div>
+                <div class="blade g-8"></div>
+            </div>
+
+            <div class="origin-root">
+
+                <div class="flower-cluster flower--far-left">
+                    <div class="bud-wrapper">
+                        <div class="petal-container">
+                            <div class="petal petal--1"></div><div class="petal petal--2"></div><div class="petal petal--3"></div><div class="petal petal--4"></div><div class="petal petal--5"></div>
+                            <div class="center-core"></div>
+                        </div>
+                    </div>
+                    <div class="stem">
+                        <div class="foliage foliage--L foli-1"></div>
+                        <div class="foliage foliage--R foli-2"></div>
+                        <div class="foliage foliage--L foli-3"></div>
+                    </div>
+                </div>
+
+                <div class="flower-cluster flower--left">
+                    <div class="bud-wrapper">
+                        <div class="petal-container">
+                            <div class="petal petal--1"></div><div class="petal petal--2"></div><div class="petal petal--3"></div><div class="petal petal--4"></div><div class="petal petal--5"></div>
+                            <div class="center-core"></div>
+                            <div class="firefly f-1"></div>
+                        </div>
+                    </div>
+                    <div class="stem">
+                        <div class="foliage foliage--R foli-1"></div>
+                        <div class="foliage foliage--L foli-2"></div>
+                        <div class="foliage foliage--R foli-3"></div>
+                        <div class="foliage foliage--L foli-4"></div>
+                    </div>
+                </div>
+
+                <div class="flower-cluster flower--center">
+                    <div class="bud-wrapper">
+                        <div class="petal-container">
+                            <div class="petal petal--1"></div><div class="petal petal--2"></div><div class="petal petal--3"></div><div class="petal petal--4"></div><div class="petal petal--5"></div>
+                            <div class="center-core"></div>
+                            <div class="firefly f-1"></div>
+                            <div class="firefly f-2"></div>
+                        </div>
+                    </div>
+                    <div class="stem">
+                        <div class="foliage foliage--L foli-1"></div>
+                        <div class="foliage foliage--R foli-1"></div>
+                        <div class="foliage foliage--L foli-2"></div>
+                        <div class="foliage foliage--R foli-3"></div>
+                        <div class="foliage foliage--L foli-4"></div>
+                    </div>
+                </div>
+
+                <div class="flower-cluster flower--right">
+                    <div class="bud-wrapper">
+                        <div class="petal-container">
+                            <div class="petal petal--1"></div><div class="petal petal--2"></div><div class="petal petal--3"></div><div class="petal petal--4"></div><div class="petal petal--5"></div>
+                            <div class="center-core"></div>
+                            <div class="firefly f-2"></div>
+                        </div>
+                    </div>
+                    <div class="stem">
+                        <div class="foliage foliage--L foli-1"></div>
+                        <div class="foliage foliage--R foli-2"></div>
+                        <div class="foliage foliage--L foli-3"></div>
+                        <div class="foliage foliage--R foli-4"></div>
+                    </div>
+                </div>
+
+                <div class="flower-cluster flower--far-right">
+                    <div class="bud-wrapper">
+                        <div class="petal-container">
+                            <div class="petal petal--1"></div><div class="petal petal--2"></div><div class="petal petal--3"></div><div class="petal petal--4"></div><div class="petal petal--5"></div>
+                            <div class="center-core"></div>
+                        </div>
+                    </div>
+                    <div class="stem">
+                        <div class="foliage foliage--R foli-1"></div>
+                        <div class="foliage foliage--L foli-2"></div>
+                        <div class="foliage foliage--R foli-3"></div>
+                    </div>
+                </div>
+
+            </div> 
+
+            <div class="grass-layer grass-layer--foreground">
+                <div class="blade g-3"></div>
+                <div class="blade g-6"></div>
+                <div class="blade g-9"></div>
+            </div>
+            
+        </div>
+
+        <div class="glass-ground"></div>
+    </main>
+
+</div>
+
+</body>
+</html>
